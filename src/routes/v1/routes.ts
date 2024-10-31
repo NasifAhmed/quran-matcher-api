@@ -52,14 +52,14 @@ router.post("/search", async (c: any) => {
         verses: [],
     };
     for (let x in parsedResponse) {
-        console.log(parsedResponse[x]);
+        // console.log(parsedResponse[x]);
         const verse = await getQuranVerses({
             surahNumber: parsedResponse[x][0],
             startVerse: parsedResponse[x][1],
             endVerse: parsedResponse[x][2],
         });
         myApiResponse.verses.push(verse);
-        console.log(verse);
+        // console.log(verse);
     }
 
     return c.json(myApiResponse);
