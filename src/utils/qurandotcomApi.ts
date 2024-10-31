@@ -61,6 +61,7 @@ function cleanTranslationText({
 
     return cleaned;
 }
+
 const getSingleVerse = async (surah: number, verse: number) => {
     const response = await fetch(
         `https://api.quran.com/api/v4/verses/by_key/${surah}:${verse}?translations=20`
