@@ -26,6 +26,6 @@ app.notFound((c) => {
     );
 });
 
-app.basePath("/api/v1/").route("/", routes);
+app.route("/api/v1/", routes);
 
 export default app;

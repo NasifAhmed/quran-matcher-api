@@ -8,6 +8,11 @@ router.get("/", (c) => {
     });
 });
 
+router.post("/search", async (c) => {
+    const body = await c.req.json();
+    return c.text(JSON.stringify(body));
+});
+
 // Test error
 router.get("/error", (c) => {
     throw new Error("This is an error");
