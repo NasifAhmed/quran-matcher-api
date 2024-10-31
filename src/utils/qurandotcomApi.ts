@@ -10,13 +10,11 @@ type QuranAPIResponse = {
         sajdah_number: number;
         page_number: number;
         juz_number: number;
-        translations: [
-            {
-                id: number;
-                resource_id: number;
-                text: string;
-            }
-        ];
+        translations: {
+            id: number;
+            resource_id: number;
+            text: string;
+        }[];
     };
 };
 
@@ -24,7 +22,8 @@ type Payload = {
     surah_number: number;
     verse_start: number;
     verse_end: number;
-    text: string;
+    text_english: string;
+    text_bangla: string;
 };
 
 type GetVersesParams = {
@@ -64,14 +63,17 @@ function cleanTranslationText({
 
 const getSingleVerse = async (surah: number, verse: number) => {
     const response = await fetch(
-        `https://api.quran.com/api/v4/verses/by_key/${surah}:${verse}?translations=20`
+        `https://api.quran.com/api/v4/verses/by_key/${surah}:${verse}?translations=20,163`
     );
 
     if (!response.ok) {
         throw new Error(`API request failed with status ${response.status}`);
     }
     const data: QuranAPIResponse = await response.json();
-    return data.verse.translations[0].text;
+    return {
+        verse_english: data.verse.translations[0].text,
+        verse_bangla: data.verse.translations[1].text,
+    };
 };
 
 async function getQuranVerses({
@@ -87,20 +89,35 @@ async function getQuranVerses({
             throw new Error("Invalid verse range");
         }
 
-        let translationText = "";
+        let translationText: { verse_english: string; verse_bangla: string } = {
+            verse_english: "",
+            verse_bangla: "",
+        };
         if (endVerse == startVerse) {
-            translationText = cleanTranslationText({
-                text: await getSingleVerse(surahNumber, startVerse),
+            translationText = await getSingleVerse(surahNumber, startVerse);
+
+            translationText.verse_english = cleanTranslationText({
+                text: translationText.verse_english,
+            });
+            translationText.verse_bangla = cleanTranslationText({
+                text: translationText.verse_bangla,
             });
         } else {
-            let combinedText = "";
+            let combinedTextEnglish = "";
+            let combinedTextBangla = "";
             for (let i = startVerse; i <= endVerse; i++) {
-                combinedText = `${combinedText}${
-                    combinedText != "" ? "." : ""
-                } ${await getSingleVerse(surahNumber, i)}`;
+                combinedTextEnglish = `${combinedTextEnglish}${
+                    combinedTextEnglish != "" ? "." : ""
+                } ${(await getSingleVerse(surahNumber, i)).verse_english}`;
+                combinedTextBangla = `${combinedTextBangla}${
+                    combinedTextBangla != "" ? "।" : ""
+                } ${(await getSingleVerse(surahNumber, i)).verse_bangla}`;
             }
-            translationText = cleanTranslationText({
-                text: combinedText,
+            translationText.verse_english = cleanTranslationText({
+                text: combinedTextEnglish,
+            });
+            translationText.verse_bangla = cleanTranslationText({
+                text: combinedTextBangla,
             });
         }
 
@@ -108,7 +125,8 @@ async function getQuranVerses({
             surah_number: surahNumber,
             verse_start: startVerse,
             verse_end: endVerse,
-            text: translationText,
+            text_english: translationText.verse_english,
+            text_bangla: translationText.verse_bangla,
         };
     } catch (error) {
         console.error("Error fetching Quran verses:", error);
