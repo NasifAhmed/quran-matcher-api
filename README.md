@@ -1,8 +1,6 @@
-```
-npm install
-npm run dev
-```
+# API for this project : https://github.com/NasifAhmed/quran-verse-ai
 
-```
-npm run deploy
-```
+## Tech Stack 
+- Hono
+- Typescript
+- Cloudflare Workers
