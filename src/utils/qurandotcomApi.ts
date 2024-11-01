@@ -103,16 +103,20 @@ async function getQuranVerses({
                 text: translationText.verse_bangla,
             });
         } else {
-            let combinedTextEnglish = "";
-            let combinedTextBangla = "";
+            const versePromises = [];
             for (let i = startVerse; i <= endVerse; i++) {
-                combinedTextEnglish = `${combinedTextEnglish}${
-                    combinedTextEnglish != "" ? "." : ""
-                } ${(await getSingleVerse(surahNumber, i)).verse_english}`;
-                combinedTextBangla = `${combinedTextBangla}${
-                    combinedTextBangla != "" ? "।" : ""
-                } ${(await getSingleVerse(surahNumber, i)).verse_bangla}`;
+                versePromises.push(getSingleVerse(surahNumber, i));
             }
+
+            const verses = await Promise.all(versePromises);
+
+            const combinedTextEnglish = verses
+                .map((verse) => verse.verse_english)
+                .join(". ");
+            const combinedTextBangla = verses
+                .map((verse) => verse.verse_bangla)
+                .join("। ");
+
             translationText.verse_english = cleanTranslationText({
                 text: combinedTextEnglish,
             });
